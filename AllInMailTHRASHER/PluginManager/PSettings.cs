@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text.RegularExpressions;
-using xNet;
+
 
 namespace AllInMailTHRASHER.PluginManager
 {
@@ -11,69 +10,139 @@ namespace AllInMailTHRASHER.PluginManager
     {
         public string Name { get; set; }
         public string Author { get; set; }
-        public string Email { get; set; }
         public int Threads { get; set; }
         public string Capture { get; set; }
-        public string FileOutput { get; set; }
         public string FileName { get; set; }
-        public List<Regexx> list = new List<Regexx>();
-        [Obfuscation(Feature = "virtualization", Exclude = false)]
-        public static PSettings GetSettings(string file)
+        public string FileOutput { get; set; }
+        public List<Requests> requests { get; set; }
+        [Obfuscation(Feature = "virtualization", Exclude = true)]
+        public static PSettings GetSettings(string file, bool files = true)
         {
-            string s = File.ReadAllText(file);
+            dynamic json = "";
+            if(files)
+            json = JsonConvert.DeserializeObject(File.ReadAllText(file));
+            else
+            {
+                json = JsonConvert.DeserializeObject(file);
+            }
             PSettings p = new PSettings
             {
-                Name = s.GetData("Name"),
-                Author = s.GetData("Author"),
-                Email = s.GetData("Domain"),
-                Threads = Convert.ToInt32(s.GetData("Threads")),
-                Capture = s.GetData("Capture"),
-                FileOutput = s.GetData("FileOutput"),
-                FileName = s.GetData("FileName"),
-                list = x(s)
+                Name = json.Name,
+                Author = json.Author,
+                Threads = json.Threads,
+                Capture = json.Capture,
+                FileName = json.FileName,
+                FileOutput = json.FileOutput,
+                requests = ConfigPasser(json)
             };
             return p;
-            }
-        [Obfuscation(Feature = "virtualization", Exclude = false)]
-        public static List<Regexx> x(string s)
-        {
-            List<Regexx> list = new List<Regexx>();
-            MatchCollection mm = Regex.Matches(s, "<Regex>(.*)<\\/Regex>");
-            foreach (Match m in mm) {
-                var r = m.Groups[1].Value.Split(new string[] { "||||" }, StringSplitOptions.None);
-                list.Add(new Regexx
-                {
-                    no = r[0],
-                    regexpos = r[1],
-                    regex = r[2],
-                    group = Regex.Match(r[3], "\\[(.*)\\]").Groups[1].Value
-
-                });
-
-            }
-            return list;
         }
-        
+        [Obfuscation(Feature = "virtualization", Exclude = false)]
+        private static List<Requests> ConfigPasser(dynamic json)
+        {
+            List<Requests> requests = new List<Requests>();
+            foreach (dynamic ob in json.Requests)
+            {
+                requests.Add(new Requests
+                {
+                    Domain = ob.Domain,
+                    variables = ParseVariables(ob),
+                    successKeys = ParsesuccessKeys(ob),
+                    failureKeys = ParsefailureKeys(ob)
+                });
+            }
+             return requests;
+        }
+        [Obfuscation(Feature = "virtualization", Exclude = false)]
+        private static List<Variables> ParseVariables(dynamic s)
+        {
+            int index = 0;
+            List<Variables> list = new List<Variables>();
+            try
+            {
+                foreach (var ob in s.Variables)
+                {
+                    index++;
+                    list.Add(new Variables
+                    {
+                        no = index,
+                        regexpos = ob["Position"],
+                        regex = ob["Regex"]
+
+                    });
+
+                }
+                return list;
+            }
+            catch
+            {
+                return list;
+            }
+        }
+        [Obfuscation(Feature = "virtualization", Exclude = false)]
+        private static List<successKeys> ParsesuccessKeys(dynamic s)
+        {
+            List<successKeys> list = new List<successKeys>();
+            try
+            {
+                foreach (var ob in s.successKeys)
+                {
+                    list.Add(new successKeys
+                    {
+                        key = ob
+
+                    });
+
+                }
+                return list;
+            }
+            catch
+            {
+                return list;
+            }
+        }
+        [Obfuscation(Feature = "virtualization", Exclude = false)]
+        private static List<failureKeys> ParsefailureKeys(dynamic s)
+        {
+            List<failureKeys> list = new List<failureKeys>();
+            try
+            {
+                foreach (var ob in s.failureKeys)
+                {
+                    list.Add(new failureKeys
+                    {
+                        key = ob
+
+                    });
+
+                }
+                return list;
+            }
+            catch
+            {
+                return list;
+            }
         }
     }
-public class Regexx
+    }
+public class Variables
 {
-    public string no { get; set; }
+    public int no { get; set; }
     public string regexpos { get; set; }
     public string regex { get; set; }
-    public string group { get; set; }
 }
-public static class Help
-    {
-    [Obfuscation(Feature = "virtualization", Exclude = false)]
-    public static string GetData(this string source, string Tok)
-        {
-            return Parse(source, Tok);
-        }
-
-    [Obfuscation(Feature = "virtualization", Exclude = false)]
-    private static string Parse(string s, string p)
-        {
-            return s.Substring($"<{p}>", $"</{p}>", 0);
-        }
-    }
+public class Requests
+{
+    public string Domain { get; set; }
+    public List<Variables> variables { get; set; }
+    public List<successKeys> successKeys { get; set; }
+    public List<failureKeys> failureKeys { get; set; }
+}
+public class successKeys
+{
+    public string key { get; set; }
+}
+public class failureKeys
+{
+    public string key { get; set; }
+}

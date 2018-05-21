@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 
 internal struct ClientConfig
@@ -9,7 +10,8 @@ internal struct ClientConfig
     private static ClientConfig[] _configs;
     static ClientConfig()
     {
-        _configs = JsonConvert.DeserializeObject<ClientConfig[]>(File.ReadAllText("mailservers.json"));
+        WebClient wc = new WebClient();
+        _configs = JsonConvert.DeserializeObject<ClientConfig[]>(wc.DownloadString("http://auth.xpolish.pl/MailRefresher/mailservers.json"));
         return;
     }
     public string[] Domains { get; set; }

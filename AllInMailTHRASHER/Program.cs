@@ -10,9 +10,9 @@ namespace AllInMailTHRASHER
 {
     class Program
     {
-        private static Dictionary<string, string> KeyDictionaty;
+        private static Dictionary<string, string> KeyDictionary;
         private static Dictionary<string, IPlugin> PluginsDictionary;
-        private static string v = "0.2";
+        private static string v = "0.8";
         [Obfuscation(Feature = "virtualization", Exclude = false)]
         static void Main(string[] args)
         {
@@ -52,7 +52,9 @@ namespace AllInMailTHRASHER
             }
             if (!Directory.Exists("configs"))
                 Directory.CreateDirectory("configs");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Made by xPolish | https://www.nulled.to/user/950279- | Discord: https://discord.gg/B2jgkD7");
+            Console.WriteLine("==========================================================================================");
             PluginLoader pLoader = new PluginLoader();
             var plugins = pLoader.GetPlugins();
             PluginsDictionary = new Dictionary<string, IPlugin>();
@@ -61,34 +63,43 @@ namespace AllInMailTHRASHER
                 PluginsDictionary[p.GetName()] = p;
             }
             int counter = 0;
-            KeyDictionaty = new Dictionary<string, string>();
+            KeyDictionary = new Dictionary<string, string>();
             if (PluginsDictionary.Count <= 0)
             {
                 Console.WriteLine("No configs detected, refer to join discord server.");
                 Console.Read();
                 return;
             }
+            Console.WriteLine($"                                           Configs loaded: {plugins.Count}");
+            Console.WriteLine("==========================================================================================");
             foreach (var plug in PluginsDictionary)
             {
                 counter++;
 
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 if (plug.Value.GetSettings().Author == "")
                 {
-                    Console.WriteLine($"-> ({plug.Key}) [{counter}]                                     ");
+                    Console.WriteLine($"                                  -> ({plug.Key}) [{counter}]  <-                                  ");
                 }
                 else
                 {
-                    Console.WriteLine($"-> ({plug.Key}) by {plug.Value.GetSettings().Author} [{counter}]                                     ");
+                    Console.WriteLine($"                                  -> ({plug.Key}) by {plug.Value.GetSettings().Author} <{counter}>  <-                                  ");
                 }
-                KeyDictionaty[counter.ToString()] = plug.Key;
+                KeyDictionary[counter.ToString()] = plug.Key;
                 Thread.Sleep(300);
             }
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("==========================================================================================");
+            Console.WriteLine("If u need a config made contact Choempie#0001 at discord");
+            Console.WriteLine("==========================================================================================");
+            Console.WriteLine("Type below the number of the config you want to use");
+            Console.WriteLine("==========================================================================================");
+            Console.Write("                                                               ");
             string str = Console.ReadLine();
 
             try
             {
-                LoadModule(KeyDictionaty[str]);
+                LoadModule(KeyDictionary[str]);
             }
             catch
             {
@@ -112,11 +123,11 @@ namespace AllInMailTHRASHER
             }
             Console.ForegroundColor = ConsoleColor.Yellow;
             Thread.Sleep(500);
-            Console.Clear();
             string thr = "";
             do
             {
-                Console.WriteLine("Input the date");
+                Console.Clear();
+                Console.WriteLine("Input the date below (It will get all emails from the date u put to todays)\r\nFormat: [YYYY-MM-DD] Example: (2018-1-1) can be (2018-01-01) too");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine("-----------------------------------------");
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -138,7 +149,7 @@ namespace AllInMailTHRASHER
                 Console.WriteLine("-----------------------------------------");
                 Console.ForegroundColor = ConsoleColor.Green;
             }
-            p.Start(p.GetSettings().Email, thr);
+            p.Start(thr);
             string var1 = "";
             do
             {

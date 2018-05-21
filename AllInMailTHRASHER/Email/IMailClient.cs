@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using AE.Net.Mail;
 using xNet;
 
@@ -12,7 +10,6 @@ namespace AllInMailTHRASHER.Email {
 interface IMailClient
 {
     bool IsConnected { get; }
-
     bool IsAuthenticated { get; }
     void SetProxy(ProxyType proxyType, string proxy);
     void SetProxy(ProxyClient proxyClient);
@@ -32,18 +29,18 @@ class ImapMailClient : IMailClient
     private ProxyClient _proxyClient;
     public ImapMailClient()
     {
-        this._imapClient = new ImapClient
+        _imapClient = new ImapClient
         {
             AuthMethod = AuthMethods.Login,
-            ServerTimeout = 30000
+            ServerTimeout = 15000
         };
     }
     public ImapMailClient(ClientConfig config)
     {
-        this._imapClient = new ImapClient
+        _imapClient = new ImapClient
         {
             AuthMethod = AuthMethods.Login,
-            ServerTimeout = 30000
+            ServerTimeout = 15000
         };
         _clientConfig = config;
     }
@@ -72,18 +69,18 @@ class ImapMailClient : IMailClient
         [Obfuscation(Feature = "virtualization", Exclude = false)]
         public MailMessage[] GetMessages(string from, DateTime time)
     {
-        this._imapClient.Encoding = Encoding.UTF8;
+        _imapClient.Encoding = Encoding.UTF8;
         string criteria = string.Format("BODY \"If you were prompted for a verification code\" FROM {0}", "account-update@amazon.com");
         criteria = $"FROM {from}";
 
-        List<AE.Net.Mail.MailMessage> list = new List<MailMessage>();
+        List<MailMessage> list = new List<MailMessage>();
         try
         {
-            string[] array2 = this._imapClient.Search(criteria);
+            string[] array2 = _imapClient.Search(criteria);
             int i = array2.Length - 1;
             while (array2.Length != 0 && i >= 0)
             {
-                AE.Net.Mail.MailMessage mailMessage = this._imapClient.GetMessage(array2[i]);
+                MailMessage mailMessage = _imapClient.GetMessage(array2[i]);
                 if (mailMessage.Date >= time)
                 {
                     list.Add(mailMessage);
@@ -103,7 +100,7 @@ class ImapMailClient : IMailClient
         bool result = false;
         try
         {
-            this._imapClient.Login(mail, password);
+            _imapClient.Login(mail, password);
             result = _imapClient.IsAuthenticated;
         }
         catch (Exception ex)
@@ -153,14 +150,14 @@ class Pop3MailClient : IMailClient
     {
         _pop3Client = new Pop3Client
         {
-            ServerTimeout = 30000
+            ServerTimeout = 15000
         };
     }
         public Pop3MailClient(ClientConfig config)
     {
         _pop3Client = new Pop3Client
         {
-            ServerTimeout = 30000
+            ServerTimeout = 15000
         };
         _clientConfig = config;
     }
@@ -190,7 +187,7 @@ class Pop3MailClient : IMailClient
         public MailMessage[] GetMessages(string from, DateTime time)
     {
 
-        int messageCount = this._pop3Client.GetMessageCount();
+        int messageCount = _pop3Client.GetMessageCount();
 
         List<MailMessage> list = new List<MailMessage>();
 
@@ -198,7 +195,7 @@ class Pop3MailClient : IMailClient
         {
             try
             {
-                AE.Net.Mail.MailMessage mailMessage = this._pop3Client.GetMessage(i, false);
+                MailMessage mailMessage = _pop3Client.GetMessage(i, false);
 
                 if (mailMessage.Date >= time && mailMessage.From?.Address.ToLower() == from)
                 {
@@ -219,7 +216,7 @@ class Pop3MailClient : IMailClient
         bool result = false;
         try
         {
-            this._pop3Client.Login(mail, password);
+            _pop3Client.Login(mail, password);
             result = _pop3Client.IsAuthenticated;
         }
         catch (Exception ex)
