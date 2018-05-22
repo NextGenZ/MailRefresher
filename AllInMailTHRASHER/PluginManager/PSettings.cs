@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -14,6 +15,7 @@ namespace AllInMailTHRASHER.PluginManager
         public string Capture { get; set; }
         public string FileName { get; set; }
         public string FileOutput { get; set; }
+        public string ConsoleColor { get; set; }
         public List<Requests> requests { get; set; }
         [Obfuscation(Feature = "virtualization", Exclude = true)]
         public static PSettings GetSettings(string file, bool files = true)
@@ -33,6 +35,7 @@ namespace AllInMailTHRASHER.PluginManager
                 Capture = json.Capture,
                 FileName = json.FileName,
                 FileOutput = json.FileOutput,
+                ConsoleColor = json.Color,
                 requests = ConfigPasser(json)
             };
             return p;
@@ -46,13 +49,30 @@ namespace AllInMailTHRASHER.PluginManager
                 requests.Add(new Requests
                 {
                     Domain = ob.Domain,
+                    ExactEmail = ExactEmail(ob.ExactEmail),
                     variables = ParseVariables(ob),
                     successKeys = ParsesuccessKeys(ob),
-                    failureKeys = ParsefailureKeys(ob)
+                    failureKeys = ParsefailureKeys(ob),
+                    subjects = ParseSubjects(ob)
                 });
             }
              return requests;
         }
+        private static bool ExactEmail(dynamic s) {
+            string ss = Convert.ToString(s);
+            try
+            {
+                if (ss.ToLower().Equals("true"))
+                    return true;
+                else
+                    return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         [Obfuscation(Feature = "virtualization", Exclude = false)]
         private static List<Variables> ParseVariables(dynamic s)
         {
@@ -90,9 +110,7 @@ namespace AllInMailTHRASHER.PluginManager
                     list.Add(new successKeys
                     {
                         key = ob
-
                     });
-
                 }
                 return list;
             }
@@ -112,9 +130,27 @@ namespace AllInMailTHRASHER.PluginManager
                     list.Add(new failureKeys
                     {
                         key = ob
-
                     });
-
+                }
+                return list;
+            }
+            catch
+            {
+                return list;
+            }
+        }
+        [Obfuscation(Feature = "virtualization", Exclude = false)]
+        private static List<Subject> ParseSubjects(dynamic s)
+        {
+            List<Subject> list = new List<Subject>();
+            try
+            {
+                foreach (var ob in s.Subject)
+                {
+                    list.Add(new Subject
+                    {
+                        subject = ob
+                    });
                 }
                 return list;
             }
@@ -125,18 +161,20 @@ namespace AllInMailTHRASHER.PluginManager
         }
     }
     }
+public class Requests
+{
+    public string Domain { get; set; }
+    public bool ExactEmail { get; set; }
+    public List<Variables> variables { get; set; }
+    public List<successKeys> successKeys { get; set; }
+    public List<failureKeys> failureKeys { get; set; }
+    public List<Subject> subjects { get; set; }
+}
 public class Variables
 {
     public int no { get; set; }
     public string regexpos { get; set; }
     public string regex { get; set; }
-}
-public class Requests
-{
-    public string Domain { get; set; }
-    public List<Variables> variables { get; set; }
-    public List<successKeys> successKeys { get; set; }
-    public List<failureKeys> failureKeys { get; set; }
 }
 public class successKeys
 {
@@ -145,4 +183,8 @@ public class successKeys
 public class failureKeys
 {
     public string key { get; set; }
+}
+public class Subject
+{
+    public string subject { get; set; }
 }

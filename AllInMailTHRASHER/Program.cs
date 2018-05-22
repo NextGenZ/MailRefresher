@@ -12,7 +12,8 @@ namespace AllInMailTHRASHER
     {
         private static Dictionary<string, string> KeyDictionary;
         private static Dictionary<string, IPlugin> PluginsDictionary;
-        private static string v = "0.8";
+        public static List<string> blacklisteddomains = new List<string>();
+        private static string v = "0.9";
         [Obfuscation(Feature = "virtualization", Exclude = false)]
         static void Main(string[] args)
         {
@@ -49,6 +50,12 @@ namespace AllInMailTHRASHER
                 Console.WriteLine("Combo.txt not found");
                 Console.Read();
                 return;
+            }
+            {
+                string[] xx = new WebClient().DownloadString("http://auth.xpolish.pl/MailRefresher/blacklist.txt").Split(',');
+                foreach(var x in xx){
+                    blacklisteddomains.Add(x);
+                }
             }
             if (!Directory.Exists("configs"))
                 Directory.CreateDirectory("configs");
@@ -94,7 +101,7 @@ namespace AllInMailTHRASHER
             Console.WriteLine("==========================================================================================");
             Console.WriteLine("Type below the number of the config you want to use");
             Console.WriteLine("==========================================================================================");
-            Console.Write("                                                               ");
+            Console.Write("                                                 ");
             string str = Console.ReadLine();
 
             try
@@ -140,14 +147,26 @@ namespace AllInMailTHRASHER
                 Console.WriteLine($"You started Cracking: {pName}");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine("-----------------------------------------");
-                Console.ForegroundColor = ConsoleColor.Green;
+                ConsoleColor consoleColor = ConsoleColor.Green;
+                try
+                {
+                    consoleColor = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), p.GetSettings().ConsoleColor, true);
+                }
+                catch { }
+                Console.ForegroundColor = consoleColor;
             }
             else
             {
                 Console.WriteLine($"You started Cracking: {pName} by {p.GetSettings().Author}");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine("-----------------------------------------");
-                Console.ForegroundColor = ConsoleColor.Green;
+                ConsoleColor consoleColor = ConsoleColor.Green;
+                try
+                {
+                    consoleColor = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), p.GetSettings().ConsoleColor, true);
+                }
+                catch{ }
+                Console.ForegroundColor = consoleColor;
             }
             p.Start(thr);
             string var1 = "";

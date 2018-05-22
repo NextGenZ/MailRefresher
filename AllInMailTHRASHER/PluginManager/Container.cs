@@ -36,6 +36,8 @@ namespace AllInMailTHRASHER.PluginManager
         {
             if (_pSettings.Threads > 500)
                 _pSettings.Threads = 500;
+            if(lines.ToList().Count < 500)
+                _pSettings.Threads = lines.ToList().Count;
             if (!IsWorked)
             {
                 Directory.CreateDirectory("Results");
@@ -75,9 +77,9 @@ namespace AllInMailTHRASHER.PluginManager
             {
                 var combos = combo.Split(';', ':');
                 if (combos.Length != 2)
-                {
                     return;
-                }
+             if (Program.blacklisteddomains.Contains(combos[0].ToString().Split('@')[1]))
+                  return;
                 Check(combos[0], combos[1], Date);
                 count++;
                 int left = end - count;
@@ -120,8 +122,21 @@ namespace AllInMailTHRASHER.PluginManager
                     var messages = client.GetMessages(x.Domain, DateTime.Parse(date));
                     foreach (var message in messages)
                     {
-
-                        string messs = message.Subject + " " + message.AlternateViews[1].Body;
+                        if (x.ExactEmail) {
+                        if (!message.From.Address.Equals(x.Domain))
+                        {
+                            Bad++;
+                            return;
+                        }
+                        }
+                        foreach (var subject in x.subjects){
+                            if (!message.Subject.Contains(subject.subject))
+                            {
+                                Bad++;
+                                return;
+                            }
+                        }
+                        string messs = message.AlternateViews[1].Body;
                         foreach(var failureKey in x.failureKeys)
                         {
                             if (messs.Contains(failureKey.key))

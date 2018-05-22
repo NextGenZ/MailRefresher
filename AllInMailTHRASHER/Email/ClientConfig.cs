@@ -1,6 +1,5 @@
 ﻿using AllInMailTHRASHER.Email;
 using Newtonsoft.Json;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -51,12 +50,12 @@ internal struct ClientConfig
     [Obfuscation(Feature = "virtualization", Exclude = false)]
     public bool IsNull()
     {
-        return string.IsNullOrWhiteSpace(this.Hostname);
+        return string.IsNullOrWhiteSpace(Hostname);
     }
     [Obfuscation(Feature = "virtualization", Exclude = false)]
     public override string ToString()
     {
-        string text = this.Hostname;
+        string text = Hostname;
         if (text.Length > 33)
         {
             text = text.Substring(0, 30) + "...";
